@@ -18,4 +18,14 @@ dropout = 0.1
 
 torch.manual_seed(3456789)
 
+#load text
+with open('don-quixote.txt', 'r', encoding='utf-8') as f:
+    text = f.read()
+
+#load the sentencepiece tokenizer we trained in the notebook
+sp = spm.SentencePieceProcessor(model_file='quixote.model')
+vocab_size = sp.get_piece_size()
+
+encode = lambda s: sp.encode(s, out_type=int)
+decode = lambda l: sp.decode(l)
 
