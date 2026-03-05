@@ -87,3 +87,41 @@ class Head(nn.Module):
         out = wei @ v #btt @ btx -> btc
         return out 
     
+
+
+class FeedFoward(nn.Module):
+    """
+    a simple linear layer followed by a non linearlity
+    """
+
+    def __init__(self, n_embd):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(n_embd, 4 * n_embd),
+            nn.ReLU(),
+            nn.Linear(4 * n_embd, n_embd),
+            nn.Dropout(dropout)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+    
+
+
+class MultiHeadAttention(nn.Module):
+    """
+    multiple heads of self attention in parallel
+    """
+    
+
+class Block(nn.Module):
+    """
+    transformer block comms followed by computation
+    """
+
+    def __inti__(self, n_embd, n_head):
+        super().__init__()
+        head_size = n_embd // n_head
+        self.ffwd = FeedFoward(n_embd)
+        self.ln1 = nn.LayerNorm(n_embd)
+        self.ln2 = nn.LayerNorm(n_embd)
