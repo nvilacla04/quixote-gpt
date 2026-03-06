@@ -129,9 +129,73 @@ class Block(nn.Module):
     transformer block comms followed by computation
     """
 
-    def __inti__(self, n_embd, n_head):
+    def __init__(self, n_embd, n_head):
         super().__init__()
         head_size = n_embd // n_head
         self.ffwd = FeedFoward(n_embd)
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
+
+    def forward(self, x):
+        x = x + self.sa(self.ln1(x))
+        x = x + self.ffwd(self.ln2(x))
+        return x
+
+
+class GPTLanguageModel(nn.Module):
+    """
+    one more class bro i promise broo
+    """
+    def __init__(self):
+        super().__init__()
+        self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
+        self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
+        self.ln_f = nn.LayerNorm(n_embd)
+        self.lm_head = nn.Linear(n_embd, vocab_size)
+
+
+    def generate(self, idx, max_new_tokens):
+        #idx is (B, T)  array of indeces in the current context
+
+        for _ in range(max_new_tokens):
+            
+            #crop idx to the last block size tokens
+            idx_cond = idx[:, -block_size]
+            
+            #get the predictions 
+            logits, loss = self(idx_cond)
+
+            #focus only on the last time stamp
+            logits = logits[:, -1, :] #B,c
+
+            #apply softmax to get proba
+            probs = F.softmax(logits, dim=-1)
+
+            #sample from the distribution
+            idx_next = torch.multinomial(probs, num_samples=1) #B,1 
+
+            #append sampled idx to the running sequence 
+            idx = torch.cat((idx, idx_next), dim=1 ) #B, T+1
+
+        return idx 
+    
+model = GPTLanguageModel()
+m = model.to(device)
+
+print(f"{sum(p.numel() for p in m.parameters())/1e6:.2f}M params")
+
+
+optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+
+
+
+for iter in range(max_iters):
+    #every once in a while eval the loss on train and val sets 
+    if iter % eval_interval == 0 or iter == max_iters - 1:
+        losses = estimate_loss()
+        print(f"step {iter}: train loss: {losses["train"]:.4f}, val loss {losses["val"]:.4f}")
+
+
+    #sample a batch of data 
+    xb, yb = get_batch("train")
