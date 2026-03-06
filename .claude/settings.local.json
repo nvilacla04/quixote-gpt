@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import sys; print\\(sys.executable\\)\")",
+      "Bash(python -c \"import torch; print\\(torch.__version__\\)\")",
+      "Bash(.venv/Scripts/python.exe v2.py)"
+    ]
+  }
+}
