@@ -216,11 +216,14 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
 
 
+metrics = []
+
 for iter in tqdm(range(max_iters)):
     #every once in a while eval the loss on train and val sets
     if iter % eval_interval == 0 or iter == max_iters - 1:
         losses = estimate_loss()
         tqdm.write(f"step {iter}: train loss: {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        metrics.append((iter, losses['train'].item(), losses['val'].item()))
 
 
     #sample a batch of data 
@@ -233,6 +236,17 @@ for iter in tqdm(range(max_iters)):
     loss.backward()
     optimizer.step()
 
+
+#save model
+torch.save(m.state_dict(), 'quixote_model.pt')
+print("model saved to quixote_model.pt")
+
+#save metrics
+with open('metrics.txt', 'w') as f:
+    f.write("step,train_loss,val_loss\n")
+    for step, train_loss, val_loss in metrics:
+        f.write(f"{step},{train_loss:.4f},{val_loss:.4f}\n")
+print("metrics saved to metrics.txt")
 
 #gen model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
