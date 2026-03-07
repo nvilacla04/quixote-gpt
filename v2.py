@@ -7,17 +7,17 @@ from tqdm import tqdm
 
 
 #hyperparams
-batch_size = 32         #from 16 shorter sequences with BPE so we can fit more 
-block_size = 64         #from 32 subword carries more meaning than char
-max_iters = 5000        
+batch_size = 32
+block_size = 64
+max_iters = 5000
 eval_interval = 100
-learning_rate = 3e-4 
-device = "cuda" if torch.cuda.is_available() else "cpu"  #will use vu servers so GPU for me 
+learning_rate = 3e-4
+device = "cuda" if torch.cuda.is_available() else "cpu"  #will use vu servers so GPU for me
 eval_iters = 200
-n_embd = 128 
+n_embd = 128
 n_head = 4
-n_layer = 4 
-dropout = 0.1 
+n_layer = 4
+dropout = 0.3
 
 torch.manual_seed(3456789)
 
@@ -251,3 +251,11 @@ print("metrics saved to metrics.txt")
 #gen model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 print(decode(m.generate(context, max_new_tokens=500)[0].tolist()))
+
+#auto commit
+import subprocess
+final_train = metrics[-1][1]
+final_val = metrics[-1][2]
+subprocess.run(["git", "add", "v2.py", "metrics.txt", ".gitignore"])
+subprocess.run(["git", "commit", "-m", f"train: {max_iters} iters | train={final_train:.4f} val={final_val:.4f}"])
+#going sleep lets seee results after 
