@@ -250,7 +250,11 @@ print("metrics saved to metrics.txt")
 
 #gen model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(decode(m.generate(context, max_new_tokens=500)[0].tolist()))
+generated = decode(m.generate(context, max_new_tokens=10000)[0].tolist())
+print(generated)
+with open('generated.txt', 'w', encoding='utf-8') as f:
+    f.write(generated)
+print("generated text saved to generated.txt")
 
 #auto commit
 import subprocess
